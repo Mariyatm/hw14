@@ -3,17 +3,17 @@ import json
 
 
 def run_query(sql_query, parametrs=(), is_json=True):
-    con = sqlite3.connect("netflix.db")
-    con.row_factory = sqlite3.Row
-    cur = con.cursor()
-    if len(parametrs) > 0:
-        results = cur.execute(sql_query, parametrs)
-    else:
-        results = cur.execute(sql_query)
-    if is_json:
-        return json.dumps([dict(result) for result in results.fetchall()])
-    else:
-        return results
+    with sqlite3.connect("netflix.db") as con:
+        con.row_factory = sqlite3.Row
+        cur = con.cursor()
+        if len(parametrs) > 0:
+            results = cur.execute(sql_query, parametrs)
+        else:
+            results = cur.execute(sql_query)
+        if is_json:
+            return json.dumps([dict(result) for result in results.fetchall()])
+        else:
+            return results
 
 
 def get_like_from(word):
@@ -42,8 +42,3 @@ def get_coactors(actor1, actor2):
 def find_by_type_year_genre(type, year, genre):
     sqlie_query = """select title, description from netflix where `type`=? and release_year=? and listed_in like ?"""
     return run_query(sqlie_query, (type, year, get_like_from(genre)))
-
-
-print(get_top10_by_genre("Documentaries"))
-print(get_coactors("Rose McIver", "Ben Lamb"))
-print(find_by_type_year_genre("Movie", 2019, "Documentaries"))
